@@ -1,0 +1,35 @@
+name: Node CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [6.x, 8.x, 10.x, 12.x]
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: npm ci and audit
+      if: ('6.x' != matrix.node-version)
+      run: |
+        npm ci
+        npm audit
+    - name: npm clean install
+      if: ('6.x' == matrix.node-version)
+      run: |
+        rm -rf node_modules
+        npm install
+    - name: npm build and test
+      run: |
+        npm build
+        npm test
+      env:
+        CI: true
